@@ -38,6 +38,19 @@ def train(model):
     model.fit(inData, outData, epochs=100, batch_size=100, shuffle=True)
     return model
 
+def hardTest(model):
+    print("Saved model seems super accurate. Lets test it.");
+    loops = 50
+    while loops > 0:
+        loops -= 1
+        testdataz = getNewData()
+        testInData = testdataz[0]
+        testOutData = testdataz[1]
+        scores = model.evaluate(testInData,testOutData)
+        print('Test score: ', scores[1])
+
+    return model
+
 def cycle(forcenew = False):
     dataz = getNewData()
     inData = dataz[0]
@@ -59,6 +72,9 @@ def cycle(forcenew = False):
         print("\n\nBase Metric -- \n%s: %.10f%%" % (saved_model.metrics_names[1], saved_score*100))
     else:
         forcenew = True
+
+    if saved_score > 0.99:
+        return hardTest(saved_model)
 
     if forcenew:
         model = train(generateNewModel())

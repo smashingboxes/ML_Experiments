@@ -24,7 +24,7 @@ def primeToArray(prime):
     outputSplitList[index] = digit
     index += 1
 
-  print(outputSplitList)
+  # print(outputSplitList)
   return outputSplitList
 
 def mixedData():
