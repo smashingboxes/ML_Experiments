@@ -41,7 +41,8 @@ def getNewData(mixedData):
 
 def generateNewModel():
     model = Sequential()
-    model.add(Dense(30, input_dim=primes.MAX_DIGITS, kernel_initializer="random_uniform", activation='softmax'))
+    model.add(Dense(3, input_dim=primes.MAX_DIGITS, kernel_initializer="random_uniform", activation='relu'))
+    model.add(Dense(50, activation='softmax'))
     model.add(Dense(50, activation='relu'))
     model.add(Dense(50, activation='softmax'))
     model.add(Dense(50, activation='relu'))
@@ -61,7 +62,7 @@ def generateNewModel():
 def train(model):
     global inData, outData
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-    model.fit(inData, outData, epochs=100, batch_size=100, shuffle=True)
+    model.fit(inData, outData, epochs=10, batch_size=100, shuffle=True)
     return model
 
 def hardTest(model):
@@ -94,7 +95,7 @@ def cycle(forcenew = False):
 
     saved_model_filename = 'saved_model.h5'
 
-    if os.path.isfile(saved_model_filename):
+    if False and os.path.isfile(saved_model_filename):
         saved_model = load_model(saved_model_filename)
         saved_model_scores = saved_model.evaluate(inData,outData)
         saved_score = saved_model_scores[1]
