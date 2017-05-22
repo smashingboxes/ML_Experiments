@@ -5,30 +5,56 @@ import random
 import time
 import primes
 import os.path
+import data1
+import data2
+import data3
 
+MAX_DIGITS = 200
 
 inData = list()
 outData = list()
 
-def getNewData():
+def primeToArray(prime):
+  outputSplitList = list(0.0 for d in range(0,MAX_DIGITS))
+  outputSplitListLen = len(outputSplitList)
+
+  primeStringList = list((float(d) / 10.0) for d in str(prime))
+  primeStringLen = len(primeStringList)
+
+  index = outputSplitListLen - primeStringLen
+  for digit in primeStringList:
+    outputSplitList[index] = digit
+    index += 1
+
+  return outputSplitList
+
+
+def getNewData(mixedData):
     global inData, outData
-    mixedData = primes.mixedData()
-    random.shuffle(mixedData)
 
     inData = list(map(lambda x: x[0], mixedData))
     outData = list(map(lambda x: x[1], mixedData))
 
-    print inData[1]
-    print outData[1]
+    inData = list(map(lambda (i,x): primeToArray(x), enumerate(inData)))
 
     return (inData, outData)
 
 def generateNewModel():
     model = Sequential()
-    model.add(Dense(random.randint(3,30), input_dim=primes.MAX_DIGITS, kernel_initializer="random_uniform", activation='relu'))
-    model.add(Dense(random.randint(50,500), activation='relu'))
-    model.add(Dense(random.randint(50,500), activation='relu'))
-    model.add(Dense(random.randint(50,500), activation='relu'))
+    model.add(Dense(30, input_dim=primes.MAX_DIGITS, kernel_initializer="random_uniform", activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(50, activation='softmax'))
+    model.add(Dense(50, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
     return model
 
@@ -39,11 +65,12 @@ def train(model):
     return model
 
 def hardTest(model):
+    global data1
     print("Saved model seems super accurate. Lets test it.");
     loops = 50
     while loops > 0:
         loops -= 1
-        testdataz = getNewData()
+        testdataz = getNewData(data1.primesData)
         testInData = testdataz[0]
         testOutData = testdataz[1]
         scores = model.evaluate(testInData,testOutData)
@@ -52,11 +79,13 @@ def hardTest(model):
     return model
 
 def cycle(forcenew = False):
-    dataz = getNewData()
+    global data2, data3
+
+    dataz = getNewData(data2.primesData)
     inData = dataz[0]
     outData = dataz[1]
 
-    testdataz = getNewData()
+    testdataz = getNewData(data3.primesData)
     testInData = testdataz[0]
     testOutData = testdataz[1]
 
