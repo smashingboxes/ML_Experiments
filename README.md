@@ -2,7 +2,7 @@
 
 Just some machine learning experiments with Keras
 
-## Setup
+## Dev Setup
 
 - `[sudo] pip install virtualenv`
 - `virtualenv .env`

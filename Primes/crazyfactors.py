@@ -3,7 +3,7 @@ import os.path
 def factors(limit, start = 0):
   counter = start
   numberMap = []
-  while counter < limit:
+  while len(numberMap) < limit:
     numList = getfactors(counter)
     # print(counter, numList, '+0')
     numberMap.append([counter, 0.0])
@@ -16,7 +16,7 @@ def factors(limit, start = 0):
     numberMap.append([counter+1, score])
     counter += 2
 
-  print(numberMap)
+  print(len(numberMap), limit, start)
   return numberMap
 
 def product(out, x):
@@ -65,4 +65,3 @@ def getFactorsOfNum(num):
     tracker+=1
   return factors
 
-factors(30000, 20000)
