@@ -21,7 +21,6 @@ data1 = random.sample(data_main, 1000)
 data2 = random.sample(data_main, 1000)
 data3 = random.sample(data_main, 1000)
 
-print(data1)
 
 def primeToArray(prime):
     outputSplitList = list(0.0 for d in range(0,MAX_DIGITS))
@@ -52,17 +51,23 @@ def generateNewModel():
     global MAX_DIGITS
     model = Sequential()
     model.add(Dense(30, input_dim=MAX_DIGITS, kernel_initializer="random_uniform", activation='softmax'))
-    model.add(Dense(50, activation='softmax'))
-    model.add(Dense(50, activation='softmax'))
-    model.add(Dense(50, activation='relu'))
-    model.add(Dense(50, activation='softmax'))
-    model.add(Dense(1, activation='sigmoid'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='relu'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(30, activation='softmax'))
+    model.add(Dense(1, activation='softmax'))
     return model
 
 def train(model):
     global inData, outData
     model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-    model.fit(inData, outData, epochs=100, batch_size=10000, shuffle=True)
+    model.fit(inData, outData, epochs=1000, batch_size=100000, shuffle=True)
     return model
 
 def hardTest(model):
@@ -130,4 +135,4 @@ def cycle(forcenew = False):
     time.sleep(5)
     cycle(final_score < 0.6)
 
-cycle()
+cycle(True)
