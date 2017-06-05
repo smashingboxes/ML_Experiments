@@ -1,4 +1,5 @@
 import os.path
+import sys
 
 def factors(limit, start = 0):
   counter = start
@@ -15,6 +16,27 @@ def factors(limit, start = 0):
     # print(counter+1, numList, '+1', isPrime(counter+1))
     numberMap.append([counter+1, score])
     counter += 2
+
+  print(len(numberMap), limit, start)
+  return numberMap
+
+def primesonly(limit, start = 0):
+  counter = start
+  if (counter != 2 and counter % 2 == 0):
+    counter += 1
+
+  if (counter < 2):
+    counter += 1
+
+  numberMap = []
+  while len(numberMap) < limit:
+
+    if isPrime(counter):
+      numberMap.append([counter, 1.0])
+      sys.stdout.write("Prime factoring progress: %d   \r" % (len(numberMap)) )
+      sys.stdout.flush()
+
+    counter += 1
 
   print(len(numberMap), limit, start)
   return numberMap
