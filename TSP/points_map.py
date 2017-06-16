@@ -1,8 +1,9 @@
 # functions to generate a map for a TSP
 import numpy as np
 import math
+import itertools
 
-def points(count = 10, mapsize = 100):
+def points(count = 10, mapsize = 1000):
   points = np.zeros((count,2))
   i = 0
   for p in points:
@@ -10,7 +11,7 @@ def points(count = 10, mapsize = 100):
     points[i][1] = np.random.randint(0, mapsize)
     i += 1
 
-  return points
+  return itertools.permutations(points.tolist())
 
 def distance(point1, point2):
   return math.sqrt(((point1[0] - point2[0]) ** 2) + ((point1[1] - point2[1]) ** 2))
