@@ -1,81 +1,103 @@
-from keras.models import Sequential, load_model
-from keras.layers import LSTM, Dense, Embedding
+# -*- coding: utf-8 -*-
 import numpy as np
 import random
-import sys
-import time
-import os.path
-import points_map
+from keras.models import Sequential, load_model
+from keras.layers import LSTM, Dense, Embedding
+from keras.optimizers import Adam
+from collections import deque
+from keras import backend as K
 
-# -*- coding: utf-8 -*-
-import json
-
-# Make it work for Python 2+3 and with Unicode
-import io
-try:
-    to_unicode = unicode
-except NameError:
-    to_unicode = str
+EPISODES = 5000
 
 
-def generate_data_point():
-  points_iterator = points_map.points()
+class DQNAgent:
+  def __init__(self, state_size, action_size):
+    self.state_size = state_size
+    self.action_size = action_size
+    self.memory = deque(maxlen=2000)
+    self.gamma = 0.95    # discount rate
+    self.epsilon = 1.0  # exploration rate
+    self.epsilon_min = 0.01
+    self.epsilon_decay = 0.995
+    self.learning_rate = 0.001
+    self.model = self._build_model()
+    self.target_model = self._build_model()
+    self.update_target_model()
 
-  low_dist = 0
-  low_points_store = []
-  points = []
-  iteration_count = 0
-  cont = True
+  def _huber_loss(self, target, prediction):
+    # sqrt(1+error^2)-1
+    error = prediction - target
+    return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
 
-  try:
-    while cont == True:
-      iteration_count += 1
-      points = points_iterator.next()
-      dist = points_map.dist_between_points(points)
-      sys.stdout.write("Permutation progress: %f %f %f  \r" % (iteration_count, dist, low_dist) )
-      sys.stdout.flush()
+  def _build_model(self):
+    # Neural Net for Deep-Q learning Model
+    model = Sequential()
+    model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+    model.add(Dense(24, activation='relu'))
+    model.add(Dense(self.action_size, activation='linear'))
+    model.compile(loss=self._huber_loss,
+            optimizer=Adam(lr=self.learning_rate))
+    return model
 
-      if low_dist == 0 or dist < low_dist:
-        low_points_store = points
-        low_dist = dist
+  def update_target_model(self):
+    # copy weights from model to target_model
+    self.target_model.set_weights(self.model.get_weights())
 
-  except StopIteration:
-    pass
+  def remember(self, state, action, reward, next_state, done):
+    self.memory.append((state, action, reward, next_state, done))
 
-  print(low_points_store, low_dist, iteration_count)
-  return { 'data': low_points_store, 'score': low_dist }
+  def act(self, state):
+    if np.random.rand() <= self.epsilon:
+      return random.randrange(self.action_size)
+    act_values = self.model.predict(state)
+    return np.argmax(act_values[0])  # returns action
+
+  def replay(self, batch_size):
+    minibatch = random.sample(self.memory, batch_size)
+    for state, action, reward, next_state, done in minibatch:
+      target = self.model.predict(state)
+      if done:
+        target[0][action] = reward
+      else:
+        a = self.model.predict(next_state)[0]
+        t = self.target_model.predict(next_state)[0]
+        target[0][action] = reward + self.gamma * t[np.argmax(a)]
+      self.model.fit(state, target, epochs=1, verbose=0)
+    if self.epsilon > self.epsilon_min:
+      self.epsilon *= self.epsilon_decay
+
+  def load(self, name):
+    self.model.load_weights(name)
+
+  def save(self, name):
+    self.model.save_weights(name)
 
 
-def write_data(data):
-    # Write JSON file
-  with io.open('training_data.json', 'w', encoding='utf8') as outfile:
-    str_ = json.dumps(data)
-    outfile.write(to_unicode(str_))
+if __name__ == "__main__":
+  # env = gym.make('CartPole-v1')
+  # state_size = env.observation_space.shape[0]
+  # action_size = env.action_space.n
+  # agent = DQNAgent(state_size, action_size)
+  # # agent.load("./save/cartpole-master.h5")
+  # done = False
+  # batch_size = 64
 
-def load_data():
-  # Read JSON file
-  try:
-    f = open('training_data.json', 'rb')
-    with f as data_file:
-      data_loaded = json.load(data_file)
-  except IOError:
-    print "Could not read file:", 'training_data.json'
-    data_loaded = []
-
-  return data_loaded
-
-def generate_training_data_loop():
-  i = 10
-  full_data = load_data()
-
-  while i > 0:
-    i -= 1
-    data_point = generate_data_point()
-    full_data.append(data_point)
-    write_data(full_data)
-    pass
-
-def main():
-  generate_training_data_loop()
-
-main();
+  # for e in range(EPISODES):
+  #     state = env.reset()
+  #     state = np.reshape(state, [1, state_size])
+  #     for time in range(500):
+  #         # env.render()
+  #         action = agent.act(state)
+  #         next_state, reward, done, _ = env.step(action)
+  #         next_state = np.reshape(next_state, [1, state_size])
+  #         agent.remember(state, action, reward, next_state, done)
+  #         state = next_state
+  #         if done:
+  #             agent.update_target_model()
+  #             print("episode: {}/{}, score: {}, e: {:.2}"
+  #                   .format(e, EPISODES, time, agent.epsilon))
+  #             break
+  #     if len(agent.memory) > batch_size:
+  #         agent.replay(batch_size)
+  #     # if e % 10 == 0:
+  #     #     agent.save("./save/cartpole.h5")
