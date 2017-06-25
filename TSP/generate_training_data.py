@@ -14,8 +14,9 @@ except NameError:
 
 
 def generate_data_point():
-  num_points = random.randint(8,20)
+  num_points = random.randint(8,12)
   num_map_size = random.randint(500,5000)
+  print("Points: %d -- Map Size: %d" % (num_points, num_map_size))
 
   points_iterator = points_map.points(num_points, num_map_size)
 

@@ -19,7 +19,7 @@ class Trainer:
 
     self.SCORE_MUL = 100
     self.flatten_list = lambda l: [item for sublist in l for item in sublist]
-    self.norm_list = lambda l: [float(i)/max(raw) in l for i in raw]
+    self.normalize_list = lambda n: [float(i)/max(raw) in n for i in raw]
 
     self.state = {
       'selected_point_index': 0,
@@ -35,7 +35,15 @@ class Trainer:
     self.new_game()
 
   def observation_space(self):
-    space = [ self.selected_point(), self.last_selected_point() ]
+    _selected_point = self.selected_point()
+    _last_selected_point = self.last_selected_point()
+    space = [
+      _selected_point,
+      _last_selected_point,
+      [ points_map.distance(_last_selected_point, _selected_point) ],
+      [ self.state['current_distance'] ],
+      [ len(self.state['remaining_points']) ],
+    ]
     return self.flatten_list(space)
 
   def is_done(self):
@@ -68,9 +76,6 @@ class Trainer:
     return self.observation_space()
 
   def step(self, index):
-    # print("Step!", index)
-    # import code; code.interact(local=dict(globals(), **locals()))
-
     reward = self.do_action(index)
     next_state = self.observation_space()
     done = self.is_done()
@@ -114,7 +119,7 @@ class Trainer:
   def score(self):
     avg_best = self.state['best_distance'] / (len(self.state['best_points']) - 1)
     score_p = min(1.0, avg_best / (self.state['current_distance'] / (len(self.state['current_points']) - 1)))
-    score_offset_p = ((score_p - 0.3))
+    score_offset_p = max(0.0, (score_p - 0.45))
     return (score_offset_p)
 
   def agent_score(self):
