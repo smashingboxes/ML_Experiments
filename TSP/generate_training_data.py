@@ -3,6 +3,7 @@ import sys
 import os.path
 import points_map
 import json
+import random
 
 # Make it work for Python 2+3 and with Unicode
 import io
@@ -13,7 +14,10 @@ except NameError:
 
 
 def generate_data_point():
-  points_iterator = points_map.points()
+  num_points = random.randint(8,20)
+  num_map_size = random.randint(500,5000)
+
+  points_iterator = points_map.points(num_points, num_map_size)
 
   low_dist = 10000000000.
   low_points_store = []
