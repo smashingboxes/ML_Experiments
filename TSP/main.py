@@ -39,6 +39,9 @@ class DQNAgent:
     model.add(Reshape((4, 8), input_shape=(32,0)))
     model.add(LSTM(32, dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(16, activation='relu'))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(16, activation='relu'))
+    model.add(Dense(16, activation='relu'))
     # model.add(Dense(12, activation='relu'))
     # model.add(Dense(8, activation='relu'))
     # model.add(Dense(4, activation='relu'))
@@ -91,7 +94,7 @@ if __name__ == "__main__":
   state_size = len(env.observation_space())
   action_size = len(env.actions)
   agent = DQNAgent(state_size, action_size)
-  # agent.load("./save/tsp_model.h5")
+  agent.load("./save/tsp_model.h5")
   done = False
   batch_size = 64
 

@@ -12,9 +12,10 @@ try:
 except NameError:
     to_unicode = str
 
+FILENAME = "save/training_data.json"
 
 def generate_data_point():
-  num_points = random.randint(8,12)
+  num_points = random.randint(7,10)
   num_map_size = random.randint(500,5000)
   print("Points: %d -- Map Size: %d" % (num_points, num_map_size))
 
@@ -47,14 +48,14 @@ def generate_data_point():
 
 def write_data(data):
     # Write JSON file
-  with io.open('training_data.json', 'w', encoding='utf8') as outfile:
+  with io.open(FILENAME, 'w', encoding='utf8') as outfile:
     str_ = json.dumps(data)
     outfile.write(to_unicode(str_))
 
 def load_data():
   # Read JSON file
   try:
-    f = open('training_data.json', 'rb')
+    f = open(FILENAME, 'rb')
     with f as data_file:
       data_loaded = json.load(data_file)
   except IOError:

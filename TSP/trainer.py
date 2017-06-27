@@ -9,11 +9,13 @@ class Trainer:
 
     self.actions = [
       'next_point', # set cursor to next available point
+      'prev_point', # set cursor to prev available point
       'select_point' # locks in this point as the next
     ]
 
     self.action_map = {
       'next_point': self.next_point,
+      'prev_point': self.prev_point,
       'select_point': self.select_point
     }
 
@@ -40,9 +42,10 @@ class Trainer:
     space = [
       _selected_point,
       _last_selected_point,
-      [ points_map.distance(_last_selected_point, _selected_point) ],
-      [ self.state['current_distance'] ],
-      [ len(self.state['remaining_points']) ],
+      [ points_map.distance(_last_selected_point, _selected_point),
+        points_map.distance(_selected_point, self.state['current_points'][0]),
+        self.state['current_distance'],
+        len(self.state['remaining_points']) ]
     ]
     return self.flatten_list(space)
 
@@ -86,12 +89,17 @@ class Trainer:
     return self.action_map[action_name]()
 
   def next_point(self):
+    return self.move_to_point(1)
+
+  def prev_point(self):
+    return self.move_to_point(-1)
+
+  def move_to_point(self, dir):
     if (self.is_done()):
       return False
 
-    self.state['selected_point_index'] = (self.state['selected_point_index'] + 1) % len(self.state['remaining_points'])
+    self.state['selected_point_index'] = (self.state['selected_point_index'] + dir) % len(self.state['remaining_points'])
 
-    # print('Next Point Index: ', self.state['selected_point_index'])
     return 0.0
 
   def select_point(self):
@@ -105,20 +113,32 @@ class Trainer:
     _score = 0.0 + self.score()
 
     if (len(self.state['remaining_points']) == 1):
-      self.move_selected_point(0)
-      _score = _score + self.score()
+      _score = self.handle_map_finished(_score)
 
+    return _score
+
+  def handle_map_finished(self, _score):
+    self.move_selected_point(0)
+    self.state['current_distance'] += points_map.distance(
+      self.state['current_points'][0],
+      self.state['current_points'][-1]
+    )
+    _score = _score + self.score()
     return _score
 
   def move_selected_point(self, index):
     point = self.state['remaining_points'].pop(index)
     self.state['current_points'].append(point)
-    self.state['current_distance'] += points_map.distance(self.state['current_points'][-1], self.state['current_points'][-2])
+    self.state['current_distance'] += points_map.distance(
+      self.state['current_points'][-1],
+      self.state['current_points'][-2]
+    )
     self.state['current_score'] += self.score()
 
   def score(self):
-    avg_best = self.state['best_distance'] / (len(self.state['best_points']) - 1)
-    score_p = min(1.0, avg_best / (self.state['current_distance'] / (len(self.state['current_points']) - 1)))
+    avg_best = self.state['best_distance'] / len(self.state['best_points'])
+    score_p = min(1.0,
+      avg_best / (self.state['current_distance'] / len(self.state['current_points'])))
     score_offset_p = max(0.0, (score_p - 0.45))
     return (score_offset_p)
 
@@ -132,15 +152,13 @@ class Trainer:
     return self.state['current_score'] / self.high_score()
 
 
-
 def new():
   training_data = generate_training_data.load_data()
   trainer = Trainer(training_data)
   return trainer
 
 
-
-def env():
+def main():
   training_data = generate_training_data.load_data()
   trainer = Trainer(training_data)
   print(trainer.state)
@@ -160,4 +178,4 @@ def env():
   return trainer
 
 if __name__ == "__main__":
-  env()
+  main()

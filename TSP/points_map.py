@@ -26,4 +26,6 @@ def dist_between_points(points, cutoff = 10000000000.):
     if dist > cutoff:
       break
 
+  dist += distance(points[0], points[-1])
+
   return dist
