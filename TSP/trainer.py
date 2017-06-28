@@ -141,7 +141,7 @@ class Trainer:
     avg_best = self.state['best_distance'] / len(self.state['best_points'])
     score_p = min(1.0,
       avg_best / (self.state['current_distance'] / len(self.state['current_points'])))
-    score_offset_p = max(0.0, (score_p - 0.45))
+    score_offset_p = max(0.0, (score_p - 0.8))
     return (score_offset_p)
 
   def agent_score(self):

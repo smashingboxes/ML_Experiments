@@ -1,0 +1,12 @@
+{
+  "name": "TSP",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "keras-js": "^0.3.0"
+  },
+  "scripts": {
+    "prep": "./web_prep.sh"
+  }
+}
