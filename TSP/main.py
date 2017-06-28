@@ -93,12 +93,11 @@ if __name__ == "__main__":
   state_size = len(env.observation_space())
   action_size = len(env.actions)
   agent = DQNAgent(state_size, action_size)
-  # agent.load("./save/tsp_model.h5")
+  agent.load("./save/tsp_model.h5")
   done = False
   batch_size = 64
 
   reward_avg = 0.0
-  rewards = []
   for e in range(EPISODES):
     state = env.new_game()
     state = np.reshape(state, [1, state_size])
@@ -111,10 +110,7 @@ if __name__ == "__main__":
       state = next_state
       if done:
         agent.update_target_model()
-        rewards.append(best_distance / distance)
-        if len(rewards) > 10:
-          rewards.pop(0)
-        reward_avg = np.average(rewards)
+        reward_avg = best_distance / distance
 
         print("episode: {}/{}, score: {:.2}, time:{} e: {:.2}"
               .format(e, EPISODES, reward_avg, time, agent.epsilon))
