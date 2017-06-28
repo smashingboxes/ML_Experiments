@@ -36,19 +36,18 @@ class DQNAgent:
     model.add(Dense(32, input_dim=self.state_size, activation='relu'))
     # model.add(LSTM(24))
     # model.add(Embedding(200, 128))
-    model.add(Reshape((4, 8), input_shape=(32,0)))
-    model.add(LSTM(32, dropout=0.2, recurrent_dropout=0.2))
+    model.add(Reshape((4, 8), input_shape=(64,0)))
+    model.add(LSTM(64, dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(16, activation='relu'))
     model.add(Dense(16, activation='relu'))
-    # model.add(Dense(12, activation='relu'))
-    # model.add(Dense(8, activation='relu'))
-    # model.add(Dense(4, activation='relu'))
-    # model.add(Dense(16, activation='relu'))
     model.add(Dense(self.action_size, activation='linear'))
-    model.compile(loss=self._huber_loss,
-            optimizer=Adam(lr=self.learning_rate))
+
+    # model.compile(loss=self._huber_loss,
+            # optimizer=Adam(lr=self.learning_rate))
+    model.compile(loss='kullback_leibler_divergence',
+            optimizer='adam')
     return model
 
   def update_target_model(self):
@@ -94,7 +93,7 @@ if __name__ == "__main__":
   state_size = len(env.observation_space())
   action_size = len(env.actions)
   agent = DQNAgent(state_size, action_size)
-  agent.load("./save/tsp_model.h5")
+  # agent.load("./save/tsp_model.h5")
   done = False
   batch_size = 64
 
@@ -106,13 +105,13 @@ if __name__ == "__main__":
     for time in range(500):
       # env.render()
       action = agent.act(state)
-      next_state, reward, done = env.step(action)
+      next_state, reward, done, distance, best_distance = env.step(action)
       next_state = np.reshape(next_state, [1, state_size])
       agent.remember(state, action, reward, next_state, done)
       state = next_state
       if done:
         agent.update_target_model()
-        rewards.append(reward)
+        rewards.append(best_distance / distance)
         if len(rewards) > 10:
           rewards.pop(0)
         reward_avg = np.average(rewards)
