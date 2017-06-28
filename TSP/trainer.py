@@ -82,7 +82,9 @@ class Trainer:
     reward = self.do_action(index)
     next_state = self.observation_space()
     done = self.is_done()
-    return next_state, reward, done
+    distance = self.state['current_distance']
+    best_distance = self.state['best_distance']
+    return next_state, reward, done, distance, best_distance
 
   def do_action(self, index):
     action_name = self.actions[index]
