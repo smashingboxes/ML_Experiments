@@ -4,6 +4,8 @@ import os.path
 import points_map
 import json
 import random
+import math
+import numpy as np
 
 # Make it work for Python 2+3 and with Unicode
 import io
@@ -51,6 +53,32 @@ def write_data(data):
   with io.open(FILENAME, 'w', encoding='utf8') as outfile:
     str_ = json.dumps(data)
     outfile.write(to_unicode(str_))
+
+def load_normalized_data():
+  data_loaded = load_data()
+  return normalize_map_data(data_loaded)
+
+def normalize_map_data(data_loaded):
+  return map(normalize_map_data_loop, data_loaded)
+
+def normalize_map_data_loop(points_set):
+  points = points_set['data']
+  dist = points_set['score']
+
+  fn_dist_full = lambda point0, point1: math.sqrt(((point0[1] - point1[1]) ** 2) + ((point0[0] - point1[0]) ** 2))
+  fn_reduce_points_high = lambda memo, item: [(memo[0] if memo[0] > item[0] else item[0]), (memo[1] if memo[1] > item[1] else item[1])]
+  weight_fn = lambda point: math.sqrt(((point[1]) ** 2) + ((point[0]) ** 2))
+
+  points_high = reduce(fn_reduce_points_high, points)
+  points_high_weight = weight_fn(points_high)
+
+  normalize_fn = lambda point: [point[0] / points_high_weight, point[1] / points_high_weight]
+  points_normalized = map(normalize_fn, points)
+  new_normal = reduce(lambda memo, item: item, (np.array(points_normalized) / np.array(points)).flatten())
+
+  print(np.array(points).flatten())
+  return {'data': points_normalized, 'score': (dist * new_normal)}
+
 
 def load_data():
   # Read JSON file
