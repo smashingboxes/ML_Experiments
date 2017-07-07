@@ -64,7 +64,6 @@ class Trainer:
     game = random.choice(self.training_data)
     points = list(game['data'])
     random.shuffle(points)
-    # print(points, game['data'])
 
     self.state['best_points'] = list(game['data'])
     self.state['best_distance'] = game['score']
@@ -78,7 +77,6 @@ class Trainer:
     return self.observation_space()
 
   def step(self, index):
-    # reward = self.do_action(index)
     reward = self.do_action(index)
     next_state = self.observation_space()
     done = self.is_done()
@@ -109,21 +107,19 @@ class Trainer:
       return False
 
     index = self.state['selected_point_index']
-    _score = self.check_point_correctness(index)
-    # print('Selecting Point: ', self.state['remaining_points'][index])
+    _score = self.check_point_correctness(self.state['remaining_points'][index])
     self.transfer_selected_point(index)
     self.next_point()
-    # _score = 0.0 + self.score()
 
-    # if (len(self.state['remaining_points']) == 1):
-    #   _score = self.handle_map_finished(_score)
-    print(_score)
+    if (len(self.state['remaining_points']) == 1):
+       _score = self.handle_map_finished(_score)
+
     return _score
 
-  def check_point_correctness(self, index):
-    head_best_index = self.state['best_points'].index(self.state['current_points'][-1])
-    chosen_point_best_index = self.state['best_points'].index(self.state['remaining_points'][index])
-    return 1. if head_best_index - chosen_point_best_index == 1 else 0.
+  def check_point_correctness(self, chosen_point):
+    expected_best_point = self.state['best_points'][ (self.state['best_points'].index(self.state['current_points'][-1]) + 1) % len(self.state['best_points']) ]
+    measure = (expected_best_point == chosen_point)
+    return 1. if measure else -1.
 
   def handle_map_finished(self, _score):
     self.transfer_selected_point(0)
@@ -131,7 +127,7 @@ class Trainer:
       self.state['current_points'][0],
       self.state['current_points'][-1]
     )
-    _score = _score + self.score()
+    _score += self.relative_score()
     return _score
 
   def transfer_selected_point(self, index):
@@ -157,7 +153,7 @@ class Trainer:
     return self.state['high_score']
 
   def relative_score(self):
-    return self.state['current_score'] / self.high_score()
+    return self.state['best_distance'] / self.state['current_distance']
 
 
 def new():
