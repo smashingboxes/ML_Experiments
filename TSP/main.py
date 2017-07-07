@@ -21,7 +21,7 @@ class DQNAgent:
     self.epsilon = 1.0  # exploration rate
     self.epsilon_min = 0.05
     self.epsilon_decay = 0.995
-    self.learning_rate = 0.01
+    self.learning_rate = 0.001
     self.model = self._build_model()
     self.target_model = self._build_model()
     self.update_target_model()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
   agent = DQNAgent(state_size, action_size)
   # agent.load("./save/tsp_model.h5")
   done = False
-  batch_size = 4
+  batch_size = 16
 
   for e in range(EPISODES):
     state = env.new_game()
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
         break
     if len(agent.memory) > batch_size:
-      agent.replay(batch_size)
-    # if e % 100 == 0:
-    #   print('100')
-      # agent.save("./save/tsp_model.h5")
+       agent.replay(batch_size)
+    if e % 100 == 0:
+       print('100')
+       agent.save("./save/tsp_model.h5")
