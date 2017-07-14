@@ -2,6 +2,7 @@ import generate_training_data
 import points_map
 import random
 import math
+import numpy as np
 
 class Trainer:
   def __init__(self, training_data):
@@ -37,27 +38,48 @@ class Trainer:
     self.new_game()
 
   def observation_space(self):
-    _selected_point = self.selected_point()
-    _last_selected_point = self.last_selected_point()
+    selected_point = self.selected_point()
+    next_selected_point_1 = self.selected_point( self.remaining_point_index_by_offset(1) )
+    next_selected_point_2 = self.selected_point( self.remaining_point_index_by_offset(2) )
+    next_selected_point_3 = self.selected_point( self.remaining_point_index_by_offset(3) )
+
+    current_points_head = self.current_points_head()
     space = [
-      _selected_point,
-      _last_selected_point,
-      [ points_map.distance(_last_selected_point, _selected_point),
-        points_map.distance(_selected_point, self.state['current_points'][0]),
-        self.state['current_distance'] ]
+      current_points_head,
+      [self.state['current_distance']],
+      self.point_data_for_observation_space(selected_point, current_points_head),
+      self.point_data_for_observation_space(next_selected_point_1, current_points_head),
+      self.point_data_for_observation_space(next_selected_point_2, current_points_head),
+      self.point_data_for_observation_space(next_selected_point_3, current_points_head)
     ]
-    return self.flatten_list(space)
+    return (self.flatten_list(space));
+
+  def point_data_for_observation_space(self, selected_point, current_points_head):
+    return np.array([
+        selected_point,
+        [ points_map.distance(current_points_head, selected_point),
+          points_map.distance(selected_point, self.state['current_points'][0]) ]
+      ]).flatten().tolist()
+
+  def remaining_point_index_by_offset(self, offset = 0):
+    if (self.is_done()):
+      return [ False, False ]
+
+    return (self.state['selected_point_index'] + offset) % len(self.state['remaining_points'])
 
   def is_done(self):
     return (len(self.state['remaining_points']) <= 0)
 
-  def selected_point(self):
+  def selected_point(self, index = None):
     if (self.is_done()):
       return [ False, False ]
 
-    return self.state['remaining_points'][ self.state['selected_point_index'] ]
+    if (index is None):
+      index = self.state['selected_point_index']
 
-  def last_selected_point(self):
+    return self.state['remaining_points'][ index ]
+
+  def current_points_head(self):
     return self.state['current_points'][-1]
 
   def new_game(self):
@@ -117,9 +139,13 @@ class Trainer:
     return _score
 
   def check_point_correctness(self, chosen_point):
-    expected_best_point = self.state['best_points'][ (self.state['best_points'].index(self.state['current_points'][-1]) + 1) % len(self.state['best_points']) ]
-    measure = (expected_best_point == chosen_point)
+    expected_best_point = self.find_best_point_in_direction(1)
+    expected_best_point_alt = self.find_best_point_in_direction(-1)
+    measure = (expected_best_point == chosen_point) or (expected_best_point_alt == chosen_point)
     return 1. if measure else -1.
+
+  def find_best_point_in_direction(self, direction):
+    return self.state['best_points'][ (self.state['best_points'].index(self.state['current_points'][-1]) + direction) % len(self.state['best_points']) ]
 
   def handle_map_finished(self, _score):
     self.transfer_selected_point(0)

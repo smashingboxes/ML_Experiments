@@ -20,7 +20,7 @@ class DQNAgent:
     self.gamma = 0.95    # discount rate
     self.epsilon = 1.0  # exploration rate
     self.epsilon_min = 0.05
-    self.epsilon_decay = 0.995
+    self.epsilon_decay = 0.9995
     self.learning_rate = 0.001
     self.model = self._build_model()
     self.target_model = self._build_model()
@@ -37,16 +37,16 @@ class DQNAgent:
     model.add(Dense(16, input_dim=self.state_size, activation='relu'))
 
     # LSTM?
-    model.add(Reshape((4, 4), input_shape=(32,0)))
-    model.add(LSTM(32))
+    # model.add(Embedding(1024, 1024))
+    # model.add(LSTM(1024))
 
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dense(8, activation='relu'))
+    model.add(Dense(128, activation='relu'))
     model.add(Dense(self.action_size, activation='linear'))
 
-    # model.compile(loss=self._huber_loss,
-      # optimizer=Adam(lr=self.learning_rate))
-    model.compile(loss='mse', optimizer='adam')
+    model.compile(loss=self._huber_loss,
+      optimizer=Adam(lr=self.learning_rate))
+
+    #model.compile(loss='mse', optimizer='adam')
     # model.compile(loss='kullback_leibler_divergence',
       # optimizer='adam')
     return model
@@ -88,11 +88,12 @@ class DQNAgent:
 if __name__ == "__main__":
   env = trainer.new();
   state_size = len(env.observation_space())
+  print(env.observation_space())
   action_size = len(env.actions)
   agent = DQNAgent(state_size, action_size)
   # agent.load("./save/tsp_model.h5")
   done = False
-  batch_size = 16
+  batch_size = 64
 
   for e in range(EPISODES):
     state = env.new_game()
@@ -104,18 +105,18 @@ if __name__ == "__main__":
       next_state, reward, done = env.step(action)
       reward_avg += reward
       next_state = np.reshape(next_state, [1, state_size])
-      # print("reward average: {}".format(reward_avg))
+      print("reward: {}".format(reward))
 
       agent.remember(state, action, reward, next_state, done)
       state = next_state
       if done:
         agent.update_target_model()
         print("episode: {}/{}, score: {:.2}, time:{} e: {:.2}"
-              .format(e, EPISODES, reward_avg, time, agent.epsilon))
+              .format(e, EPISODES, reward, time, agent.epsilon))
 
         break
     if len(agent.memory) > batch_size:
        agent.replay(batch_size)
-    if e % 100 == 0:
-       print('100')
+    if e > 100 and e % 1000 == 0:
+       print('Save model')
        agent.save("./save/tsp_model.h5")

@@ -66,19 +66,17 @@ def normalize_map_data_loop(points_set):
   dist = points_set['score']
 
   fn_dist_full = lambda point0, point1: math.sqrt(((point0[1] - point1[1]) ** 2) + ((point0[0] - point1[0]) ** 2))
-  fn_reduce_points_high = lambda memo, item: [(memo[0] if memo[0] > item[0] else item[0]), (memo[1] if memo[1] > item[1] else item[1])]
+  fn_reduce_points_high = lambda memo, item: [max([memo[0], item[0]]), max(memo[1], item[1])]
   weight_fn = lambda point: math.sqrt(((point[1]) ** 2) + ((point[0]) ** 2))
 
   points_high = reduce(fn_reduce_points_high, points)
-  points_high_weight = weight_fn(points_high)
+  points_high_weight = max(points_high)
 
   normalize_fn = lambda point: [point[0] / points_high_weight, point[1] / points_high_weight]
   points_normalized = map(normalize_fn, points)
-  new_normal = reduce(lambda memo, item: item, (np.array(points_normalized) / np.array(points)).flatten())
+  new_normal = reduce(lambda memo, item: item, (np.array(max(points_normalized)) / np.array(max(points))).flatten())
 
-  print(np.array(points).flatten())
   return {'data': points_normalized, 'score': (dist * new_normal)}
-
 
 def load_data():
   # Read JSON file
@@ -106,5 +104,9 @@ def generate_training_data_loop():
 def main():
   generate_training_data_loop()
 
+def scale_test():
+  full_data = load_normalized_data()
+
+
 if __name__ == "__main__":
-  main();
+  scale_test();
