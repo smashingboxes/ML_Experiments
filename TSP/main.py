@@ -91,7 +91,7 @@ if __name__ == "__main__":
   print(env.observation_space())
   action_size = len(env.actions)
   agent = DQNAgent(state_size, action_size)
-  # agent.load("./save/tsp_model.h5")
+  agent.load("./save/tsp_model.h5")
   done = False
   batch_size = 64
 
