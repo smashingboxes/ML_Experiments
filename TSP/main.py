@@ -105,7 +105,7 @@ if __name__ == "__main__":
       next_state, reward, done = env.step(action)
       reward_avg += reward
       next_state = np.reshape(next_state, [1, state_size])
-      print("reward: {}".format(reward))
+      # print("reward: {}".format(reward))
 
       agent.remember(state, action, reward, next_state, done)
       state = next_state
