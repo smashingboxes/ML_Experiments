@@ -17,8 +17,8 @@ except NameError:
 FILENAME = "save/training_data.json"
 
 def generate_data_point():
-  num_points = random.randint(7,10)
-  num_map_size = random.randint(500,5000)
+  num_points = random.randint(9,14)
+  num_map_size = random.randint(500,15000)
   print("Points: %d -- Map Size: %d" % (num_points, num_map_size))
 
   points_iterator = points_map.points(num_points, num_map_size)
@@ -109,4 +109,4 @@ def scale_test():
 
 
 if __name__ == "__main__":
-  scale_test();
+  main();
