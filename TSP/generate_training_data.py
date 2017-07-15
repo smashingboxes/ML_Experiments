@@ -6,6 +6,7 @@ import json
 import random
 import math
 import numpy as np
+import time
 
 # Make it work for Python 2+3 and with Unicode
 import io
@@ -17,7 +18,7 @@ except NameError:
 FILENAME = "save/training_data.json"
 
 def generate_data_point():
-  num_points = random.randint(9,14)
+  num_points = random.randint(9,20)
   num_map_size = random.randint(500,15000)
   print("Points: %d -- Map Size: %d" % (num_points, num_map_size))
 
@@ -28,14 +29,17 @@ def generate_data_point():
   points = []
   iteration_count = 0
   cont = True
+  start_time = time.time()
 
   try:
     while cont == True:
       iteration_count += 1
       points = points_iterator.next()
       dist = points_map.dist_between_points(points, low_dist)
-      sys.stdout.write("Permutation progress: %d %f %f  \r" % (iteration_count, dist, low_dist) )
-      sys.stdout.flush()
+
+      if iteration_count % 500000 == 0:
+        sys.stdout.write("Permutation progress: %d %f %f - %d seconds \r" % (iteration_count, dist, low_dist, (time.time() - start_time)) )
+        sys.stdout.flush()
 
       if dist < low_dist:
         low_points_store = points
@@ -44,9 +48,8 @@ def generate_data_point():
   except StopIteration:
     pass
 
-  print(low_points_store, low_dist, iteration_count)
+  print(low_points_store, low_dist, iteration_count, (time.time() - start_time))
   return { 'data': low_points_store, 'score': low_dist }
-
 
 def write_data(data):
     # Write JSON file
