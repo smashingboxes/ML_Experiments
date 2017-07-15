@@ -18,7 +18,7 @@ except NameError:
 FILENAME = "save/training_data.json"
 
 def generate_data_point():
-  num_points = random.randint(9,20)
+  num_points = random.randint(9,13)
   num_map_size = random.randint(500,15000)
   print("Points: %d -- Map Size: %d" % (num_points, num_map_size))
 
